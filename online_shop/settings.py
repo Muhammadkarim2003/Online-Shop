@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--7ey=@5ye3x!!k-a-t)@!^alb5y7b05o0=fxa=q8sd+sux2!bv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     'shopcard',
     'customer',
 ]
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

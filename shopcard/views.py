@@ -6,6 +6,7 @@ from rest_framework import status, views
 from django.http import JsonResponse, HttpResponse
 from django.db import models
 import pandas as pd
+from drf_yasg.utils import swagger_auto_schema
 
 
 
@@ -13,6 +14,10 @@ import pandas as pd
 class ShopCardCreated(views.APIView):
     queryset = ShopCard.objects.all()
     serializer_class = ShopCardSerializer
+    @swagger_auto_schema(
+        request_body=ShopCardSerializer,  
+        responses={201: "Yaratildi"},
+    )
     def post(self, request, *args, **kvargs):
         data = request.data
         serializer = ShopCardSerializer(data=data)
@@ -21,6 +26,10 @@ class ShopCardCreated(views.APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 class ShopCardRetriev(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda Shopcardni idsi orqali xaridlarni ko'rish mumkin""",
+        operation_summary=""
+    )
     def get(self, request, pk, *args, **kvargs):
         try:
             instance = ShopCard.objects.get(id=pk)
@@ -30,12 +39,21 @@ class ShopCardRetriev(views.APIView):
             return Response({"detail": "Obyekt topilmadi !!!"}, status=status.HTTP_404_NOT_FOUND)
         
 class ShopCardList(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda barcha xaridlarni ko'rish mumkin""",
+        operation_summary=""
+    )
     def get(self, request):
         shopcards = ShopCard.objects.all()
         serializer = ShopCardSerializer(shopcards, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class ShopCardUpdate(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda Shopcardni idsi orqali xaridlarni yangilash mumkin""",
+        operation_summary="",
+        request_body=ShopCardSerializer
+    )
     def put(self, request, pk, *args, **kvargs):
         try:
             data = request.data
@@ -49,6 +67,10 @@ class ShopCardUpdate(views.APIView):
         
 
 class ShopCardDelete(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda Shopcardni idsi orqali xaridlarni o'chirish mumkin""",
+        operation_summary=""
+    )
     def delete(self, request, pk, *args, **kvargs):
         try:
             instance = ShopCard.objects.get(id=pk)
@@ -58,44 +80,25 @@ class ShopCardDelete(views.APIView):
             return Response({"detail": "Obyekt topilmadi !!!"}, status=status.HTTP_404_NOT_FOUND)
         
 
-def export_shopcard_history(request, pk):
-    # ShopCard modelini chaqirish va serializer orqali ma'lumotlarni olish
-    shopcards = ShopCard.objects.filter(owner__id=pk)
-    serializer = ShopCardSerializer(shopcards, many=True)
-    data = serializer.data
-
-    # DataFrame yaratish
-    df = pd.DataFrame(data)
-
-    # Excel faylini yaratish
-    response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = f'attachment; filename="shopcard_history.xlsx"'
-    df.to_excel(response, index=False, engine='openpyxl')
-
-    return response
-
-
-
-
-
-
-
-
-
-
-
-
-# class ShopCardHistoryAPI(views.APIView):
-#     def get(self, request, pk):
-#         try:
-#             shopcards = ShopCard.objects.filter(owner__id=pk)
-#             serializer = ShopCardSerializer(shopcards, many=True)
-#             return JsonResponse(serializer.data, safe=False)
-#         except ShopCard.DoesNotExist:
-#             return JsonResponse({'message': 'Foydalanuvchi uchun haridlar topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
+class ShopCardHistoryAPI(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda Shopcardni idsi orqali xaridlarni tarixini olish mumkin""",
+        operation_summary=""
+    )
+    def get(self, request, pk):
+        try:
+            shopcards = ShopCard.objects.filter(owner__id=pk)
+            serializer = ShopCardSerializer(shopcards, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        except ShopCard.DoesNotExist:
+            return JsonResponse({'message': 'Foydalanuvchi uchun haridlar topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
         
 
 class CustomerPurchase(views.APIView):
+    @swagger_auto_schema(
+        operation_description="""Bu yerda mijozning idsi orqali xaridlarni tarixini ko'rish mumkin""",
+        operation_summary=""
+    )
     def get(self, request, pk):
         try:
             total_purchase = ShopCard.objects.filter(owner__id=pk).aggregate(total=models.Sum('total_price'))['total']
