@@ -99,13 +99,16 @@ class ExpiredProducts(views.APIView):
         operation_summary=""
     )
     def get(self, request):
-        current_time = datetime.now()
-        expired_products = Product.objects.filter(end_date__lt=current_time)
-        data = [
-            {
-                'name': product.name,
-                'end_date': product.end_date,
-            }
-            for product in expired_products
-        ]
-        return Response(data)
+        try:
+            current_time = datetime.now()
+            expired_products = Product.objects.filter(end_date__lt=current_time)
+            data = [
+                {
+                    'name': product.name,
+                    'end_date': product.end_date,
+                }
+                for product in expired_products
+            ]
+            return Response(data)
+        except Product.DoesNotExist:
+            return Response("Muddati o'tkan tovarlar topilmadi", status=status.HTTP_404_NOT_FOUND)

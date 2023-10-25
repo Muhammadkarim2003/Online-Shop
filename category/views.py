@@ -83,7 +83,8 @@ class categoryDelete(views.APIView):
 
 class MostSoldProductsAPIView(views.APIView):
     @swagger_auto_schema(
-        operation_description="""Bu yerda eng ko'p sotilgan mahsulotlarni ro'yhatini olish mumkin""",
+        operation_description="""Bu yerda eng ko'p sotilgan mahsulotlarni
+          Categoriyala bo'yicha  ro'yhatini olish mumkin""",
         operation_summary=""
     )
     def get(self, request):

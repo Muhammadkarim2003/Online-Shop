@@ -7,6 +7,8 @@ from django.http import JsonResponse, HttpResponse
 from django.db import models
 import pandas as pd
 from drf_yasg.utils import swagger_auto_schema
+from product.serializers import ProductSerializer
+from items.models import Items
 
 
 
@@ -82,21 +84,26 @@ class ShopCardDelete(views.APIView):
 
 class ShopCardHistoryAPI(views.APIView):
     @swagger_auto_schema(
-        operation_description="""Bu yerda Shopcardni idsi orqali xaridlarni tarixini olish mumkin""",
+        operation_description="""Bu yerda istalgan customerni idsi orqali xaridlarni tarixini olish mumkin""",
         operation_summary=""
     )
     def get(self, request, pk):
         try:
             shopcards = ShopCard.objects.filter(owner__id=pk)
-            serializer = ShopCardSerializer(shopcards, many=True)
-            return JsonResponse(serializer.data, safe=False)
+            all_items = Items.objects.filter(shopcard__in=shopcards)
+            products = [item.product for item in all_items]
+            total_price = sum(product.price for product in products)
+
+            serializer = ProductSerializer(products, many=True)
+            response_data = {'products': serializer.data, 'total_price': total_price}
+            return JsonResponse(response_data, safe=False)
         except ShopCard.DoesNotExist:
             return JsonResponse({'message': 'Foydalanuvchi uchun haridlar topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
-        
 
 class CustomerPurchase(views.APIView):
     @swagger_auto_schema(
-        operation_description="""Bu yerda mijozning idsi orqali xaridlarni tarixini ko'rish mumkin""",
+        operation_description="""Bu yerda mijozning idsi orqali xaridlarining
+          umumiy summasi 1000000 so'mdan ko'p yoki kamligini tekshirish mumkin mumkin""",
         operation_summary=""
     )
     def get(self, request, pk):

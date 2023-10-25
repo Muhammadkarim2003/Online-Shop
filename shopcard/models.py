@@ -18,4 +18,4 @@ class ShopCard(models.Model):
     payment = models.CharField(max_length=30, choices=PAYMENT_CHOICES)
 
     def __str__(self):
-        return str(self.owner)
+        return f"Total Price: {self.total_price}, Owner: {self.owner}"
